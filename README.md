@@ -8,7 +8,7 @@ Bay Valley Teck Discord Bot
   - if the user is new it will add the user to the database (MySQL)
   - if it is an existing user do nothing 
   
--Notification when users join, exit, or change a specific Discord Channel 
+- Notification when users join, exit, or change a specific Discord Channel 
 
 
 This will help with additional permission needed to get additional information from users :

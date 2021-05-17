@@ -42,6 +42,15 @@ bot.on('message', msg => {
   } 
 });
 
+//------------------33333333333333333333333333333
+bot.on('message', msg =>{
+  if (msg.content === 'Hello') {
+    msg.reply('World');
+    msg.channel.send('World');
+
+  } 
+});
+
 //------------------------------------- ready ----------------------------------------------------------------------
 bot.on("ready", async () => {
   console.info(`Logged in as ${bot.user.tag}!`);
@@ -117,7 +126,7 @@ bot.on('guildMemberAdd', async (member) => {
 });
 
 //-------------------------------------------- guildMemberUpdate -------------------------------------------------
-//for when people change something about their account (nickname)
+//when users change something about their account (nickname)
 bot.on("guildMemberUpdate", async (oldMember, newMember) => {
 
    if(await((oldMember.nickname != newMember.nickname) || (oldMember.user.username != newMember.user.username))){

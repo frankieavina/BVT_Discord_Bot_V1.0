@@ -11,26 +11,27 @@ const { createPool } = require('mysql2/promise');
 
 class MessageHooksService {
 
- static onMessagePing(msg){
-    
+  //--------------------------- message ping bot replies pong ---------------
+ static onMessagePing(msg){  
+     
     if (msg.content === 'ping') {
         //tags the initial user who has sent the message
         msg.reply('pong');
         //sends a message to the channel without tagging anyone
         msg.channel.send('pong');
       } 
-    
-      else if (msg.content.startsWith('!kick')) {
-        if (msg.mentions.users.size) {
-          //we can select the first mentioned user with
-          const taggedUser = msg.mentions.users.first();
-          msg.channel.send(`You wanted to kick: ${taggedUser.username}`);
-        } else {
-          msg.reply('Please tag a valid user!');
-        }
-      }
 
-}
+  }
+
+  //--------------------------- bot messages after a message is recieved ---------------
+ static onMessageAfter(bot, msg){
+      //Prevent bot from responding to its own messages
+    if( msg.author == bot.user ){
+      return
+    }
+
+    msg.channel.send("Message recieved:"+msg.content)
+  }
 
 
 }

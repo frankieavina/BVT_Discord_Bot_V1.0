@@ -17,7 +17,7 @@ class ReadyHooksService {
 
         const channel = bot.channels.get("837762614188310573");
     
-    //check if channel exists 
+        //check if channel exists 
         if (!channel) return console.error("The channel does not exist!");
     
         // bot was able to join channel 
@@ -36,6 +36,7 @@ class ReadyHooksService {
         const db = await pool.getConnection();
         db.connection.config.namedPlaceholders = true;
         await db.query(`DELETE FROM user`);
+        
         for (let i = 0; i <= startUpMembers.length - 1; i++) {
         // if (!( await confirmUserExists(startUpMembers[i].user_id))) {
         const currentMember = startUpMembers[i];
@@ -54,27 +55,27 @@ class ReadyHooksService {
         db.commit(); 
         db.release();
 
-  }
+    }
 
-  // FYI: Guilds in Discord represent an isolated collection of users and channels, 
-// and are often referred to as "servers" in the UI.
-///////////////////////// fetch All Users From Server ///////////////////////////
-static async getAllMembers(bot) {
+    // FYI: Guilds in Discord represent an isolated collection of users and channels, 
+    // and are often referred to as "servers" in the UI.
+    ///////////////////////// fetch All Users From Server ///////////////////////////
+    static async getAllMembers(bot) {
 
-    let discordGuildID = "837762614188310569"; 
-  
-    let Guild = bot.guilds.get(discordGuildID);
-    const existingMembers = [];
-    await Guild.members.map(member =>{
-      // console.log(member);
-      existingMembers.push({
-        user_id: member.user.id, 
-        user_name: member.user.username,
-        user_nick: member.nickname});
-    });
-    return existingMembers; 
-  
-  }
+        let discordGuildID = "837762614188310569"; 
+    
+        let Guild = bot.guilds.get(discordGuildID);
+        const existingMembers = [];
+        await Guild.members.map(member =>{
+        // console.log(member);
+        existingMembers.push({
+            user_id: member.user.id, 
+            user_name: member.user.username,
+            user_nick: member.nickname});
+        });
+        return existingMembers; 
+    
+    }
 
 
 }

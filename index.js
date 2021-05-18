@@ -1,4 +1,4 @@
-//Require all needed packages and files
+// Require all needed packages and files
 require('dotenv').config();
 const fs = require('fs');
 const Discord = require('discord.js');
@@ -7,31 +7,28 @@ const fetch = require('node-fetch');
 const newUsers = new Discord.Collection();
 const {createConnection} = require('mysql2');
 const { createPool } = require('mysql2/promise');
-
+// hooks for fucntions below 
 const MessageHooksService = require('./bot_service/messagehooks');
 const ReadyHooksService = require('./bot_service/readyhooks');
+const GuildMemberHooksService = require ('./bot_service/guildmembershooks');
 
-
-//prepare the mysql connection
-let db = createConnection({
-  host: process.env.DB_HOST, user: process.env.DB_USER, 
-  database: process.env.DB_NAME, password: process.env.DB_PASSWORD
-});
-const pool = createPool({ host: process.env.DB_HOST, user: process.env.DB_USER, 
-  database: process.env.DB_NAME, password: process.env.DB_PASSWORD});
-
-// token for bot
+//-------------------------------- token for bot -------------------------------------------------------------
 const TOKEN = process.env.TOKEN;
 //setting up bot 
 const bot = new Discord.Client();
 bot.login(TOKEN);
 
-//------------------------------connect to our MySQL and will test -------------------------------------------------
-db.connect(err => {
-  // Console log if there is an error
-  if (err) return console.log(err);
+//------------------------------connect to our MySQL and will test ---------------------------------------------
+let db = createConnection({
+  host: process.env.DB_HOST, user: process.env.DB_USER, 
+  database: process.env.DB_NAME, password: process.env.DB_PASSWORD
+});
 
-  // No error found?
+const pool = createPool({ host: process.env.DB_HOST, user: process.env.DB_USER, 
+  database: process.env.DB_NAME, password: process.env.DB_PASSWORD});
+
+db.connect(err => {
+  if (err) return console.log(err);
   console.log(`MySQL has been connected!`);
 });
 
@@ -41,49 +38,16 @@ db.connect(err => {
 bot.on('message', MessageHooksService.onMessagePing);
 
 //------------------------------- when user tries to communicate with bot -----------------------------------------
-bot.on('message', msg =>{
 
-  //Prevent bot from responding to its own messages
-  if( msg.author == bot.user ){
-    return
-  }
-
-  msg.channel.send("Message recieved:"+msg.content)
-
-}); 
+//bot.on('message', MessageHooksService.onMessageAfter);
 
 //------------------------------------- ready ----------------------------------------------------------------------
 
 bot.on("ready", async () => await ReadyHooksService.onReadyPing(bot,pool));
 
 //----------------------------------------- guildMemberAdd ---------------------------------------------------------
-// if a new user joins the server 
-bot.on('guildMemberAdd', async (member) => {
-
-  //fs.writeFileSync("memberAdd.json",JSON.stringify(member,null,2));
-  newUsers.set(member.id, member.user);
-  console.log(member.id);
-
-  // if user that joined server does not exist add to db 
-    if(!(await confirmUserExists(member.user.id))){
-
-      // establish db connection 
-      const db = await pool.getConnection();
-      db.connection.config.namedPlaceholders = true;
-
-      // insert values of user into db 
-      await db.query(`INSERT INTO user (id, user_name, nickname) VALUES (:id, :user_name, :nickname)`, 
-      {
-        id: member.user.id,
-        user_name: member.user.username,
-        nickname: member.user.nickname
-      });
-
-      // commit and release connection 
-      db.commit(); 
-      db.release(); 
-    }
-});
+ 
+//bot.on('guildMemberAdd', async () => await GuildMemberHooksService.onGuildMemberUA(pool));
 
 //-------------------------------------------- guildMemberUpdate -------------------------------------------------
 //when users change something about their account (nickname)
@@ -136,17 +100,5 @@ bot.on('voiceStateUpdate', (oldState, newState) => {
   
 });
 
-//----------------------------------------------- fucntions --------------------------------------------------------
-//////////////////////////////////////// confirm User Exists ////////////////////
-async function confirmUserExists(id){
-
-  const db = await pool.getConnection();
-  db.connection.config.namedPlaceholders = true;
-
-  const [[user]] = await db.query(`SELECT * FROM user WHERE id = :user_id `, {user_id: id});
-  db.release(); 
-  return !!user
-
-}
 
 

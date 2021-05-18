@@ -35,21 +35,37 @@ db.connect(err => {
 
 //---------------------------------- sending a message -------------------------------------------------------------
 bot.on('message', msg => {
+
   if (msg.content === 'ping') {
+    //tags the initial user who has sent the message
     msg.reply('pong');
+    //sends a message to the channel without tagging anyone
     msg.channel.send('pong');
-
   } 
+
+  else if (msg.content.startsWith('!kick')) {
+    if (msg.mentions.users.size) {
+      //we can select the first mentioned user with
+      const taggedUser = msg.mentions.users.first();
+      msg.channel.send(`You wanted to kick: ${taggedUser.username}`);
+    } else {
+      msg.reply('Please tag a valid user!');
+    }
+  }
+
 });
 
-//------------------33333333333333333333333333333
+//------------------------------- when user tries to communicate with bot -----------------------------------------
 bot.on('message', msg =>{
-  if (msg.content === 'Hello') {
-    msg.reply('World');
-    msg.channel.send('World');
 
-  } 
-});
+  //Prevent bot from responding to its own messages
+  if( msg.author == bot.user ){
+    return
+  }
+
+  msg.channel.send("Message recieved:"+msg.content)
+
+}); 
 
 //------------------------------------- ready ----------------------------------------------------------------------
 bot.on("ready", async () => {

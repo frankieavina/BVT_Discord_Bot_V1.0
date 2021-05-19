@@ -10,7 +10,9 @@ const { createPool } = require('mysql2/promise');
 // hooks for fucntions below 
 const MessageHooksService = require('./bot_service/messagehooks');
 const ReadyHooksService = require('./bot_service/readyhooks');
-const GuildMemberHooksService = require ('./bot_service/guildmembershooks');
+const GuildMemberAddHooksService = require ('./bot_service/guildmembershooks');
+const GuildMemberUpdateService = require ('./bot_service/guildmemberUpdatehooks');
+const VoiceHooksService = require ('./bot_service/voicehooks');
 
 //-------------------------------- token for bot -------------------------------------------------------------
 const TOKEN = process.env.TOKEN;
@@ -39,32 +41,77 @@ bot.on('message', MessageHooksService.onMessagePing);
 
 //------------------------------- when user tries to communicate with bot -----------------------------------------
 
-//bot.on('message', MessageHooksService.onMessageAfter);
+//bot.on('message', MessageHooksService.onMessageAfter(bot));
+
+bot.on('message', async (msg) => {
+  //trying figure out how to get the roles of the author of the message
+  // and comparing to admin role snowflake id 
+  //console.log(msg.author.)
+  const adminRole_ID = ("844695554821718027");
+
+  if( msg.author == bot.user ){
+    return;
+  }
+
+  msg.channel.send("Message recieved:"+msg.content);
+
+  // acknowledge and select the count(*) of rows in your users table and console.log that value
+  if(msg.content === '!report'){
+    if( adminRole_ID == msg.member.roles){
+
+        msg.channel.send("Acknowledged");
+
+        // establish db connection 
+        const db = await pool.getConnection();
+        db.connection.config.namedPlaceholders = true; 
+
+        let [[count]] = await db.query(`SELECT COUNT(*) FROM user `);
+        console.log(count); 
+
+        // commit and release connection 
+        db.commit(); 
+        db.release(); 
+    }
+
+    else {
+      msg.channel.send("You do not have Authorization.")
+    }
+  }
+
+});
 
 //------------------------------------- ready ----------------------------------------------------------------------
 
 bot.on("ready", async () => await ReadyHooksService.onReadyPing(bot,pool));
 
 //----------------------------------------- guildMemberAdd ---------------------------------------------------------
- 
-//bot.on('guildMemberAdd', async () => await GuildMemberHooksService.onGuildMemberUA(pool));
+//new user joined guild(server)
+//bot.on('guildMemberAdd', async () => await GuildMemberAddHooksService.onGuildMemberAdd(pool));
 
 //-------------------------------------------- guildMemberUpdate -------------------------------------------------
 //when users change something about their account (nickname)
 bot.on("guildMemberUpdate", async (oldMember, newMember) => {
 
-   if(await((oldMember.nickname != newMember.nickname) || (oldMember.user.username != newMember.user.username))){
+   //fs.writeFileSync("memberUpdate.json",JSON.stringify(newMember._roles,null,2));
+   if(await((oldMember.nickname != newMember.nickname))){
       // establish db connection 
       const db = await pool.getConnection();
-      db.connection.config.namedPlaceholders = true;  
+      db.connection.config.namedPlaceholders = true;
+      // await db.query(`DELETE FROM user WHERE (id=:id)`,{id: newMember.user.id});  
   
-      // insert values of user into db 
+      // insert values of user into user table 
       await db.query(`UPDATE user SET user_name=:user_name, nickname=:nickname WHERE (id=:id)`, 
       {
         id: newMember.user.id,
         user_name: newMember.user.username,
         nickname: newMember.nickname
       });
+      // await db.query(`INSERT INTO user (id, user_name, nickname) VALUES (:id, :user_name, :nickname)`, 
+      // {
+      // id: newMember.user.id,
+      // user_name: newMember.user.username,
+      // nickname: newMember.nickname
+      // });
 
       // commit and release connection 
       db.commit(); 
@@ -72,33 +119,14 @@ bot.on("guildMemberUpdate", async (oldMember, newMember) => {
     }
 
 });
+//bot.on("guildMemberUpdate", async () => GuildMemberUpdateService.onGuildMemeberUpdate);
 
 //------------------------- voiceStateUpdate papameter(oldstate, newstate) of type VoiceState ----------------------
 //   oldmember, newmember  (problem: when user connects to voice chat bot thinks it joined the channel)
-bot.on('voiceStateUpdate', (oldState, newState) => {
 
-  // status of the voice channel 
-  let newUserChannel = newState.voiceChannelID;
-  let oldUserChannel= oldState.voiceChannellID;
-  let VoiceChanID = '837762614188310573';
+bot.on('voiceStateUpdate', VoiceHooksService.onVoiceUpdate);
 
-     //User Joins a voice channel 
-    if(newUserChannel !== null && oldUserChannel == null && newUserChannel == VoiceChanID) {
-      console.log(`User joined channel with snowflake id: ${newState.voiceChannelID} and
-      user snowflake id: ${newState.id}. Username:${newState.user.username}`);
-    } 
-    
-    // User leaves a voice channel
-    else if(newUserChannel === null && oldUserChannel !== null){
-      console.log(newUserChannel);
-      console.log(`User left channel with snowflake id: ${oldState.voiceChannelID} and
-      user snowflake id: ${oldState.id}.`);
-    }
-    else{
-        console.log('User changed channels.')
-    }
-  
-});
-
-
+// audit trail (also called audit log) - is a security-relevant chronological record, set of records, 
+//and/or destination and source of records that provide documentary evidence of the 
+//sequence of activities that have affected at any time a specific operation, procedure, or event
 

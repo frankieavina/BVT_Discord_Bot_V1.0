@@ -5,8 +5,6 @@ const Discord = require('discord.js');
 const fetch = require('node-fetch');
 // initializing the discord collection 
 const newUsers = new Discord.Collection();
-const {createConnection} = require('mysql2');
-const { createPool } = require('mysql2/promise');
 
 
 class ReadyHooksService {
@@ -38,18 +36,13 @@ class ReadyHooksService {
         await db.query(`DELETE FROM user`);
         
         for (let i = 0; i <= startUpMembers.length - 1; i++) {
-        // if (!( await confirmUserExists(startUpMembers[i].user_id))) {
-        const currentMember = startUpMembers[i];
-        console.log(`user: ${currentMember.user_name} was not in the database`);
-    
-        // insert values of user into db 
-        await db.query(`INSERT INTO user (id, user_name, nickname) VALUES (:id, :user_name, :nickname)`, 
-            {
-            id: currentMember.user_id,
-            user_name: currentMember.user_name,
-            nickname: currentMember.user_nick
-            }
-        );
+            // if (!( await confirmUserExists(startUpMembers[i].user_id))) {
+            const currentMember = startUpMembers[i];
+            console.log(`user: ${currentMember.user_name} was not in the database`);
+        
+            // insert values of user into db 
+            await db.query(`INSERT INTO user (id, user_name, nickname) VALUES (:id, :user_name, :nickname)`, 
+                { id: currentMember.user_id, user_name: currentMember.user_name, nickname: currentMember.user_nick});
         }
         // commit and release connection 
         db.commit(); 
@@ -71,7 +64,8 @@ class ReadyHooksService {
         existingMembers.push({
             user_id: member.user.id, 
             user_name: member.user.username,
-            user_nick: member.nickname});
+            user_nick: member.nickname,
+            user_roles: member._roles});
         });
         return existingMembers; 
     

@@ -8,7 +8,6 @@ const newUsers = new Discord.Collection();
 const {createConnection} = require('mysql2');
 const { createPool } = require('mysql2/promise');
 
-
 class MessageHooksService {
 
   //--------------------------- message ping bot replies pong ---------------
@@ -23,14 +22,15 @@ class MessageHooksService {
 
   }
 
-  //--------------------------- bot messages after a message is recieved ---------------
- static onMessageAfter(bot, msg){
+//   //--------------------------- bot messages after a message is recieved ---------------
+ static onMessageAfter(msg,bot){
+   console.log(bot);
       //Prevent bot from responding to its own messages
     if( msg.author == bot.user ){
-      return
+      return;
     }
 
-    msg.channel.send("Message recieved:"+msg.content)
+    msg.channel.send("Message recieved:"+msg.content);
   }
 
 

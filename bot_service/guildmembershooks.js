@@ -9,10 +9,10 @@ const {createConnection} = require('mysql2');
 const { createPool } = require('mysql2/promise');
 
 
-class GuildMemberHooksService {
+class GuildMemberAddHooksService {
 
-    static async onGuildMemberUA(member, pool){
-console.log(member.id);
+    static async onGuildMemberAdd(member, pool){
+
         //fs.writeFileSync("memberAdd.json",JSON.stringify(member,null,2));
         newUsers.set(member.id, member.user);
         
@@ -54,4 +54,4 @@ console.log(member.id);
 
 }
 
-module.exports = GuildMemberHooksService
+module.exports = GuildMemberAddHooksService

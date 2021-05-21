@@ -23,14 +23,17 @@ class MessageHooksService {
   }
 
 //   //--------------------------- bot messages after a message is recieved ---------------
- static onMessageAfter(msg,bot){
+ static onMessageAfter(msg){
+   const bot = global.bot;
    console.log(bot);
       //Prevent bot from responding to its own messages
     if( msg.author == bot.user ){
       return;
     }
-
-    msg.channel.send("Message recieved:"+msg.content);
+    // msg.channel.send("Message recieved:"+msg.content);
+    if(msg.content === '!report'){
+      msg.channel.send("Acknowledged");
+    }
   }
 
 

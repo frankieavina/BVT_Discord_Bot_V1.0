@@ -5,33 +5,39 @@ const Discord = require('discord.js');
 const fetch = require('node-fetch');
 // initializing the discord collection 
 const newUsers = new Discord.Collection();
+const moment = require('moment');
 
 class VoiceHooksService {
 
-    static onVoiceUpdate(oldState, newState){
-
-    // status of the voice channel 
-    let newUserChannel = newState.voiceChannelID;
-    let oldUserChannel= oldState.voiceChannellID;
-    let VoiceChanID = '837762614188310573';
-
-     //User Joins a voice channel 
-    if(newUserChannel !== null && oldUserChannel == null && newUserChannel == VoiceChanID) {
-      console.log(`User joined channel with snowflake id: ${newState.voiceChannelID} and
-      user snowflake id: ${newState.id}. Username:${newState.user.username}`);
-    } 
-    
-    // User leaves a voice channel
-    else if(newUserChannel === null && oldUserChannel !== null){
-      console.log(newUserChannel);
-      console.log(`User left channel with snowflake id: ${oldState.voiceChannelID} and
-      user snowflake id: ${oldState.id}.`);
+  static async onVoiceUpdate(oldMember, newMember){
+    // status of the voice channel
+    const oldName = oldMember.nickname || oldMember.user.username;
+    const newName = newMember.nickname || newMember.user.username;
+    // console.log("onVoiceUpdate triggered.");
+    const db = await global.pool.getConnection();
+    // db.connection.config.namedPlaceholders = true;
+    // console.log("obtained DB.");
+    let SQL = `INSERT into audit_log (user_id, event_id, channel_id, channel_type_id, date_enterred) 
+    VALUES (?, ?, ?, 0, NOW())`;
+    try{
+      // console.log(`old:${oldMember.voiceChannelID}, new:${newMember.voiceChannelID}`)
+      if (newMember.voiceChannelID){
+        await db.query(SQL,[newMember.user.id, 1, newMember.voiceChannelID]);
+        console.log(`${newName}:${oldMember.id} joined the voice chat with id: ${newMember.voiceChannelID}`);
+      }
+      if (oldMember.voiceChannelID){
+        await db.query(SQL,[oldMember.user.id, 0, oldMember.voiceChannelID]);
+        console.log(`${oldName}:${oldMember.id} left the voice chat with id: ${oldMember.voiceChannelID}`);
+      }
+      await db.commit();
+    } catch (err){
+      console.log(err);
+      // console.log(SQL);
+    } finally {
+      // console.log("releasing db.");
+      db.release();
     }
-    else{
-        console.log('User changed channels.')
-    }
-
-    }
+  }
 
 }
 

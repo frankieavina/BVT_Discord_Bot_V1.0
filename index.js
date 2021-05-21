@@ -20,14 +20,16 @@ const TOKEN = process.env.TOKEN;
 const bot = new Discord.Client();
 bot.login(TOKEN);
 
-//------------------------------connect to our MySQL and will test ---------------------------------------------
-let db = createConnection({
-  host: process.env.DB_HOST, user: process.env.DB_USER, 
-  database: process.env.DB_NAME, password: process.env.DB_PASSWORD
-});
 
+//------------------------------connect to our MySQL and will test ---------------------------------------------
 const pool = createPool({ host: process.env.DB_HOST, user: process.env.DB_USER, 
   database: process.env.DB_NAME, password: process.env.DB_PASSWORD});
+global.pool = pool;
+let db = createConnection({ host: process.env.DB_HOST, user: process.env.DB_USER, 
+  database: process.env.DB_NAME, password: process.env.DB_PASSWORD});
+// db.connection.config.namedPlaceholders = true;
+global.db = db;
+global.bot = bot;
 
 db.connect(err => {
   if (err) return console.log(err);
@@ -41,48 +43,46 @@ bot.on('message', MessageHooksService.onMessagePing);
 
 //------------------------------- when user tries to communicate with bot -----------------------------------------
 
-//bot.on('message', MessageHooksService.onMessageAfter(bot));
+bot.on('message', MessageHooksService.onMessageAfter);
 
-bot.on('message', async (msg) => {
-  //trying figure out how to get the roles of the author of the message
-  // and comparing to admin role snowflake id 
-  //console.log(msg.author.)
-  const adminRole_ID = ("844695554821718027");
+// bot.on('message', async (msg) => {
 
-  if( msg.author == bot.user ){
-    return;
-  }
+//   const adminRole_ID = ("844695554821718027");
 
-  msg.channel.send("Message recieved:"+msg.content);
+//   if( msg.author == bot.user ){
+//     return;
+//   }
 
-  // acknowledge and select the count(*) of rows in your users table and console.log that value
-  if(msg.content === '!report'){
-    if( adminRole_ID == msg.member.roles){
+//   msg.channel.send("Message recieved:"+msg.content);
 
-        msg.channel.send("Acknowledged");
+//   if(msg.content === '!report'){
+//     // get snowflake id of author. call function where it fetches all the snowflake ids that have 
+//     // admin role and compare it the the authors id. return true of false and allow authorization
+//     //if( adminRole_ID == msg.member.roles){
 
-        // establish db connection 
-        const db = await pool.getConnection();
-        db.connection.config.namedPlaceholders = true; 
+//         msg.channel.send("Acknowledged");
 
-        let [[count]] = await db.query(`SELECT COUNT(*) FROM user `);
-        console.log(count); 
+//         // establish db connection 
+//         const db = await pool.getConnection();
+//         db.connection.config.namedPlaceholders = true; 
 
-        // commit and release connection 
-        db.commit(); 
-        db.release(); 
-    }
+//         let [[count]] = await db.query(`SELECT COUNT(*) FROM user `);
+//         console.log(count); 
 
-    else {
-      msg.channel.send("You do not have Authorization.")
-    }
-  }
+//         // commit and release connection 
+//         db.commit(); 
+//         db.release(); 
+//     // }
+//     // else {
+//     //   msg.channel.send("You do not have Authorization.")
+//     // }
+//   }
 
-});
+// });
 
 //------------------------------------- ready ----------------------------------------------------------------------
 
-bot.on("ready", async () => await ReadyHooksService.onReadyPing(bot,pool));
+bot.on("ready", ReadyHooksService.onReadyPing);
 
 //----------------------------------------- guildMemberAdd ---------------------------------------------------------
 //new user joined guild(server)

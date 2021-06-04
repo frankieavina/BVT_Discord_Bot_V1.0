@@ -5,9 +5,6 @@ const Discord = require('discord.js');
 const fetch = require('node-fetch');
 // initializing the discord collection 
 const newUsers = new Discord.Collection();
-const {createConnection} = require('mysql2');
-const { createPool } = require('mysql2/promise');
-const moment = require('moment');
 const reportingService = require('./reportingservice');
 
 class MessageHooksService {
@@ -41,11 +38,11 @@ class MessageHooksService {
     const [[userID]] = await db.query(`SELECT user_id FROM user_roles WHERE role_id = :admin_role_id `, {admin_role_id: roleID.id});
 
     //-------------- if user hasd access perform a report for specific role --------------------------
-    const msgData = msg.content.split();
+    const msgData = msg.content.split(' ');
     if(msgData[0] == '!report' ){
       if(msg.author.id == userID.user_id){
         
-        await reportingService.fullReport(msg,db,userID);
+        await reportingService.fullReport(msg,db,userID,msgData[1]);
 
       }
       else {msg.channel.send('You do not have authorization.')}

@@ -5,20 +5,20 @@ const Discord = require('discord.js');
 const fetch = require('node-fetch');
 // initializing the discord collection 
 const newUsers = new Discord.Collection();
-const {createConnection} = require('mysql2');
-const { createPool } = require('mysql2/promise');
 const moment = require('moment');
 
 
-export async function fullReport(msg,db,userID){
+async function fullReport(msg,db,userID,pickedRole){
 
+      if(pickedRole == 'Administrator'){
         //------getting audit log information for Administrator, name of user(s) and time of user on discord---------
         const [auditInfo] = await db.query(`SELECT * FROM audit_log WHERE user_id = :specific_user_id `, {specific_user_id: userID.user_id});
         const [[adminNames]] = await db.query(`SELECT user_name FROM user WHERE id = :specific_user_id `, {specific_user_id: userID.user_id});
         let amountTimeAdmin = await getEntry(auditInfo);
         msg.channel.send('Administrator(s)');
         msg.channel.send('Name:'+ adminNames.user_name +' Total Amout Time (min):' + amountTimeAdmin)
-
+      }
+      else if(pickedRole == 'Assistant Administrator'){
         //------getting audit log info for AssistantAdministrator, name of user(s) and time spent on discord-----------
         const [[roleID_AA]] = await db.query(`SELECT id FROM roles WHERE name = :role_name `, {role_name: 'AssistantAdministrator'}); 
         const [[userID_AA]] = await db.query(`SELECT user_id FROM user_roles WHERE role_id = :admin_role_id `, {admin_role_id: roleID_AA.id});
@@ -27,11 +27,14 @@ export async function fullReport(msg,db,userID){
         let amountTimeAssis = await getEntry(auditInfo_AA);
         msg.channel.send('Assistant Administrator(s)');
         msg.channel.send('Name:'+adminAssisNames.user_name+' Total Amount Time (min):'+amountTimeAssis);
-
+      }
+      else{
+        msg.channel.send("User Role Does Not Exist.")
+      }
 }
 
   //---- function to get audit_log time entry for users -----
-  export async function getEntry(arr){
+  async function getEntry(arr){
     let entries = []; 
     let user_time =[]; 
     let curr_entries = []; 
@@ -85,3 +88,5 @@ export async function fullReport(msg,db,userID){
     return user_time; 
 
    }// end of get entry fucntion 
+
+   module.exports = { fullReport: fullReport }

@@ -13,14 +13,12 @@ class VoiceHooksService {
     // status of the voice channel
     const oldName = oldMember.nickname || oldMember.user.username;
     const newName = newMember.nickname || newMember.user.username;
-    // console.log("onVoiceUpdate triggered.");
+    
     const db = await global.pool.getConnection();
-    // db.connection.config.namedPlaceholders = true;
-    // console.log("obtained DB.");
+
     let SQL = `INSERT into audit_log (user_id, event_id, channel_id, channel_type_id, date_enterred) 
     VALUES (?, ?, ?, 0, NOW())`;
     try{
-      // console.log(`old:${oldMember.voiceChannelID}, new:${newMember.voiceChannelID}`)
       if (newMember.voiceChannelID){
         await db.query(SQL,[newMember.user.id, 1, newMember.voiceChannelID]);
         console.log(`${newName}:${oldMember.id} joined the voice chat with id: ${newMember.voiceChannelID}`);
@@ -34,7 +32,6 @@ class VoiceHooksService {
       console.log(err);
       // console.log(SQL);
     } finally {
-      // console.log("releasing db.");
       db.release();
     }
   }

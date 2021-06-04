@@ -9,7 +9,10 @@ const newUsers = new Discord.Collection();
 
 class GuildMemberUpdateService {
 
-    static async onGuildMemberUpdate(oldMember, newMember, pool){
+    static async onGuildMemberUpdate(oldMember, newMember){
+
+      const pool = global.pool;
+
         if(await((oldMember.nickname != newMember.nickname))){
             // establish db connection 
             const db = await pool.getConnection();
@@ -23,12 +26,6 @@ class GuildMemberUpdateService {
               user_name: newMember.user.username,
               nickname: newMember.nickname
             });
-            // await db.query(`INSERT INTO user (id, user_name, nickname) VALUES (:id, :user_name, :nickname)`, 
-            // {
-            // id: newMember.user.id,
-            // user_name: newMember.user.username,
-            // nickname: newMember.nickname
-            // });
       
             // commit and release connection 
             db.commit(); 

@@ -5,20 +5,20 @@ const Discord = require('discord.js');
 const fetch = require('node-fetch');
 // initializing the discord collection 
 const newUsers = new Discord.Collection();
-const {createConnection} = require('mysql2');
-const { createPool } = require('mysql2/promise');
 
 
 class GuildMemberAddHooksService {
 
-    static async onGuildMemberAdd(member, pool){
+    static async onGuildMemberAdd(member){
+
+        const pool = global.pool;
 
         //fs.writeFileSync("memberAdd.json",JSON.stringify(member,null,2));
         newUsers.set(member.id, member.user);
         
 
         // if user that joined server does not exist add to db 
-        let userExists = await GuildMemberHooksService.confirmUserExists(member.user.id);
+        let userExists = await GuildMemberAddHooksService.confirmUserExists(member.user.id);
         if(!userExists){
 
         // establish db connection 
@@ -40,7 +40,7 @@ class GuildMemberAddHooksService {
 
     }
 
-    //////////////////////////////////////// confirm User Exists ////////////////////
+    //------------------------------------ Confirm User Exists Function -------------------------------//
      static async confirmUserExists(id){
 
         const db = await pool.getConnection();

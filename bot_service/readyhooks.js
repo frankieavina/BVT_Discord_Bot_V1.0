@@ -22,12 +22,12 @@ class ReadyHooksService {
         if (!channel) return console.error("The channel does not exist!");
     
         // bot was able to join channel 
-        channel.join().then(
-        connection => {
-            console.log("Successfully connected. Discord bot joined channel.");
-        }).catch(e => {
-        console.error(e);
-        });
+        // channel.join().then(
+        // connection => {
+        //     console.log("Successfully connected. Discord bot joined channel.");
+        // }).catch(e => {
+        // console.error(e);
+        // });
     
         // if start up users are not in database add them  
         const promises = [
@@ -104,10 +104,6 @@ class ReadyHooksService {
 
     //-------------------- get role(s) ad role name ---------------------------
     static async getAllRoles(bot) {
-        // get all the role objects on this guild, and insert them into roles table. you'll need the role snowflake, and the role name
-        // GUILD: https://discord.js.org/#/docs/main/11.5.1/class/Guild?scrollTo=roles
-        // COLLECTIONS: https://discord.js.org/#/docs/main/11.5.1/class/Collection
-        // ROLE: https://discord.js.org/#/docs/main/11.5.1/class/Role
         let discordGuildID = "837762614188310569"; 
         let Guild = bot.guilds.get(discordGuildID);
         const existingRoles = [];
